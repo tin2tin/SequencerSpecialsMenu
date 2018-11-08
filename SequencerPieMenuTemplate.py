@@ -1,79 +1,72 @@
 
+# ##### BEGIN GPL LICENSE BLOCK #####
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+# ##### END GPL LICENSE BLOCK #####
+ 
+bl_info = {
+    "name": "VSE Pie-Menu",
+    "author": "tintwotin",
+    "version": (0,1),
+    "blender": (2, 79, 0),
+    "location": "Sequencer > Shortcut key: 'W'",
+    "description": "Pie Menu for the Sequencer",
+    "category": "Sequencer"}
+
 import bpy
 from bpy.types import Menu
 
-# spawn a selection of tools for speeding up VSE workflow
 
-
-#Select all strips to the left
-class SelectAllToTheLeft(bpy.types.Operator):
-    bl_idname = "sequencer.allleft"
-    bl_label = "All strips to the left"
-    
-    def execute(self, context) : 
-        bpy.ops.sequencer.select(left_right='LEFT', linked_time=True)
-        return {'FINISHED'}
-    
-
-    
-#Select all strips to the right
-class SelectAllToTheRight(bpy.types.Operator):
-    bl_idname = "sequencer.allright"
-    bl_label = "All strips to the right"
-    
-    def execute(self, context) : 
-        bpy.ops.sequencer.select(left_right='RIGHT', linked_time=True)
-        return {'FINISHED'}
-
-#Set current override camera as active camera in the viewport
-class OverrideToActiveCamera(bpy.types.Operator):
-    bl_idname = "sequencer.overrideactivecamera"
-    bl_label = "Overide Camera to active"
-    
-    def execute(self, context) :
-        print("coucou")
-        return {"FINISHED"}
-
-
-class VSE_PIE_riton(Menu):
+class VSE_PIE_menu(Menu):
     bl_idname = "pie.vsetools"
-    bl_label = "VSE Tool"
+    bl_label = "VSE Pie Menu"
 
     def draw(self, context):
         layout = self.layout
 
-        pie = layout.menu_pie()
+        layout = layout.menu_pie()
+        layout.operator("transform.transform", text="Grab/Extend from Frame").mode = 'TIME_EXTEND'
+        layout.operator("sequencer.slip", text="Slip Strip Contents")
+ 
+        #hardcut=layout.operator("sequencer.cut", text="Cut (Hard) at frame")
+        #hardcut.type = 'HARD'
+        #hardcut.frame=bpy.context.scene.frame_current
+        layout.operator("sequencer.delete")
 
-        #pie.operator("sequencer.allleft", text = "All strips to the left", icon="BACK")
-        #pie.operator("sequencer.allright", text = "All strips to the right", icon="FORWARD")
-        pie.operator("sequencer.reload", text = "Reload strips",icon="FILE_REFRESH")
-        pie.operator("sequencer.overrideactivecamera", text = "Override to Active Camera", icon = "SCENE")
-        pie.operator("sequencer.cut", text="Cut (Hard) at frame").type = 'HARD'
-        pie.operator("sequencer.cut", text="Cut (Soft) at frame").type='SOFT'
-        pie.operator("sequencer.gap_remove").all = False
-        pie.operator("sequencer.gap_insert")
-        #pie.separator()
-        '''
-        props = layout.operator("sequencer.strip_jump", text="Jump to Previous Strip")
+        softcut=layout.operator("sequencer.cut", text="Cut (Soft) at frame")
+        softcut.type = 'SOFT'
+        softcut.frame=bpy.context.scene.frame_current 
+        
+        props = layout.operator("sequencer.strip_jump", text="Jump to Previous Strip")#, icon="BACK")
         props.next = False
         props.center = False
-        props = layout.operator("sequencer.strip_jump", text="Jump to Next Strip")
+        props = layout.operator("sequencer.strip_jump", text="Jump to Next Strip")#, icon="FORWARD")
         props.next = True
-        props.center = False   
-        '''         
-        #pie.separator()            
-        pie.operator("transform.transform", text="Grab/Move").mode = 'TRANSLATION'
-        pie.operator("transform.transform", text="Grab/Extend from Frame").mode = 'TIME_EXTEND'
-        pie.operator("sequencer.slip", text="Slip Strip Contents")        
+        props.center = False        
+                    
+        #layout.operator("transform.transform", text="Grab/Move").mode = 'TRANSLATION'
+        #layout.operator("sequencer.copy")
+        #layout.operator("sequencer.paste")
+        layout.operator("sequencer.gap_remove").all = False
+        layout.operator("sequencer.gap_insert")
 
 def register():
-    #tools
-    bpy.utils.register_class(SelectAllToTheLeft)
-    bpy.utils.register_class(SelectAllToTheRight)
-    bpy.utils.register_class(OverrideToActiveCamera)
     
     #pie
-    bpy.utils.register_class(VSE_PIE_riton)
+    bpy.utils.register_class(VSE_PIE_menu)
     
     wm = bpy.context.window_manager
     km = wm.keyconfigs.addon.keymaps.new(name="Sequencer",
@@ -85,15 +78,10 @@ def register():
 
 
 def unregister():
-    #tools
-    bpy.utils.unregister_class(SelectAllToTheLeft)
-    bpy.utils.unregister_class(SelectAllToTheRight)
-    bpy.utils.unregister_class(OverrideToActiveCamera)
     
     #pie
-    bpy.utils.unregister_class(VSE_PIE_riton)
+    bpy.utils.unregister_class(VSE_PIE_menu)
 
 
 if __name__ == "__main__":
     register()
-
